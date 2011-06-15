@@ -7,6 +7,8 @@ from sys import argv
 
 # Constants
 DEFAULT_SIZE = 10
+FULL_SYMBOL  = '='
+EMPTY_SYMBOL = ' '
 
 if '__main__' == __name__:
     size = int(argv[1]) if len(argv) > 1 else DEFAULT_SIZE
@@ -22,6 +24,6 @@ if '__main__' == __name__:
         with open('voltages', 'w') as file:
             file.write(str(curvolt))
     percent = int((curvolt/maxvolt)*size)
-    f = "=" * percent
-    e = " " * (size-percent)
+    f = FULL_SYMBOL  * percent
+    e = EMPTY_SYMBOL * (size-percent)
     print "[%s%s]" % (f,e)
