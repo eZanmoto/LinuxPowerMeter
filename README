@@ -18,6 +18,8 @@
 
     The power meter measures the voltage relative to the highest recorded
     voltage reading, so for best results run it at least once on a full charge.
+    The reading displayed is simply the ratio of the remaining voltage relative
+    to the highest recorded voltage.
 
 --------------------------------------------------------------------------------
 
