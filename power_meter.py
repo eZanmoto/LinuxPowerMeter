@@ -5,7 +5,7 @@
 # License
 
 # A command-line program for outputting the current battery state visually.
-# Copyright (C) 2011  Seán Kelleher
+# Copyright (C) 2011  Sean Kelleher
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,21 +30,47 @@ FULL_SYMBOL  = '='
 EMPTY_SYMBOL = ' '
 CONFIG_FILE  = 'voltages'
 
-if '__main__' == __name__:
-    size = int(argv[1]) if len(argv) > 1 else DEFAULT_SIZE
+def get_max_power():
+    """Gets the maximum recorded power of the battery."""
     with open(CONFIG_FILE, 'r') as file:
-        batfile = file.readline().strip()
-        maxvolt = int(file.readline().strip())
-    with open(batfile, 'r') as file:
-        i = file.read() # Because it's made on-the-fly
-        # FIXME: Should be checking amps instead of volts
-        j = i[:-4].rindex(' ') + 1
-        curvolt = int(i[j:-4])
-    if curvolt > maxvolt:
-        maxvolt = curvolt
-        with open(CONFIG_FILE, 'w') as file:
-            file.write(str(curvolt))
-    percent = int((curvolt/maxvolt)*size)
+        maxpower = int(file.readline().strip())
+        return maxpower
+
+def get_cur_power():
+    """Gets the current power of the battery."""
+    with open('/proc/acpi/battery/BAT0/state', 'r') as file:
+        cont = file.read() # Because it's made on-the-fly
+        for line in cont.split('\n'):
+            if line.startswith('remaining capacity:'):
+                curcur  = extract_magnitude(line, 4)
+            if line.startswith('present voltage:'):
+                curvolt = extract_magnitude(line, 3)
+    return curcur * curvolt
+
+def extract_magnitude(line, unitlen):
+    """Extracts the magnitude of a rating from a line in a linux battery file.
+
+    Keyword arguments:
+    'line'    -- the line to extract the magnitude from
+    'unitlen' -- how much of the end of the line the units take up
+    """
+    i   = line[:-unitlen].rindex(' ') + 1
+    mag = int(line[i:-unitlen])
+    return mag
+
+def set_max_power(maxpower, file=CONFIG_FILE):
+    """Sets the highest recoded power value."""
+    with open(CONFIG_FILE, 'w') as file:
+        file.write(str(maxpower))
+
+if '__main__' == __name__:
+    size   = int(argv[1]) if len(argv) > 1 else DEFAULT_SIZE
+    maxpow = get_max_power()
+    curpow = get_cur_power()
+    if curpow > maxpow:
+        maxpow = curpow
+        set_max_power(maxpow)
+    percent = int((curpow/maxpow)*size)
     f = FULL_SYMBOL  * percent
-    e = EMPTY_SYMBOL * (size-percent)
+    e = EMPTY_SYMBOL * (size - percent)
     print "[%s%s]" % (f,e)
