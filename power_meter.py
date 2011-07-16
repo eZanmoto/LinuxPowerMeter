@@ -22,7 +22,8 @@
 
 # Imports
 from __future__ import division
-from sys import argv
+import getopt
+import sys
 
 # Constants
 DEFAULT_SIZE = 10
@@ -30,9 +31,11 @@ FULL_SYMBOL  = '='
 EMPTY_SYMBOL = ' '
 CONFIG_FILE  = 'voltages'
 
-def get_max_power():
+GETOPT_ERROR_CODE = 0
+
+def get_max_power(cfile=CONFIG_FILE):
     """Gets the maximum recorded power of the battery."""
-    with open(CONFIG_FILE, 'r') as file:
+    with open(cfile, 'r') as file:
         maxpower = int(file.readline().strip())
         return maxpower
 
@@ -58,13 +61,33 @@ def extract_magnitude(line, unitlen):
     mag = int(line[i:-unitlen])
     return mag
 
-def set_max_power(maxpower, file=CONFIG_FILE):
+def set_max_power(maxpower, cfile=CONFIG_FILE):
     """Sets the highest recoded power value."""
-    with open(CONFIG_FILE, 'w') as file:
+    with open(cfile, 'w') as file:
         file.write(str(maxpower))
 
+def usage():
+    print """Linux Power Meter command-line utility
+
+    -h, --help      Print this
+    -s, --size=     Specify the character size of the graph
+    """
+    sys.exit()
+
 if '__main__' == __name__:
-    size   = int(argv[1]) if len(argv) > 1 else DEFAULT_SIZE
+    size = DEFAULT_SIZE
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'hs:', ["help", "size="])
+    except getopt.GetoptError:
+        sys.stderr.write("Error parsing command options")
+        sys.exit(getoptErrorCode)
+
+    for opt, value in opts:
+        if opt in ("-h", "--help"): usage()
+        elif opt in ("-s", "--size"): size = int(value)
+        else: usage()
+
     maxpow = get_max_power()
     curpow = get_cur_power()
     if curpow > maxpow:
