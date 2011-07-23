@@ -13,8 +13,14 @@
 
     Just a simple command-line tool to display the current battery level.
 
+    To install, run:
+        make
+
     To run:
-        ./power_meter.py
+        pmeter
+
+    To uninstall:
+        make distclean
 
     The power meter measures the voltage relative to the highest recorded
     voltage reading, so for best results run it at least once on a full charge.
