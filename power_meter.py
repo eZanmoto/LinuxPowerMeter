@@ -75,16 +75,19 @@ def usage():
     sys.exit()
 
 if '__main__' == __name__:
+    numeric = False
     size = DEFAULT_SIZE
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hs:', ["help", "size="])
+        opts, args = getopt.getopt(sys.argv[1:], 'hns:',
+                                   ["help", "numeric", "size="])
     except getopt.GetoptError:
         sys.stderr.write("Error parsing command options")
         sys.exit(getoptErrorCode)
 
     for opt, value in opts:
         if opt in ("-h", "--help"): usage()
+        elif opt in ("-n", "--numeric"): numeric = True
         elif opt in ("-s", "--size"): size = int(value)
         else: usage()
 
@@ -93,7 +96,11 @@ if '__main__' == __name__:
     if curpow > maxpow:
         maxpow = curpow
         set_max_power(maxpow)
-    percent = int((curpow/maxpow)*size)
-    f = FULL_SYMBOL  * percent
-    e = EMPTY_SYMBOL * (size - percent)
-    print "[%s%s]" % (f,e)
+    percent = curpow / maxpow
+    if numeric:
+        print "\t%.2f %%" % (percent * 100)
+    else:
+        percent = int(percent * size)
+        f = FULL_SYMBOL  * percent
+        e = EMPTY_SYMBOL * (size - percent)
+        print "[%s%s]" % (f,e)
